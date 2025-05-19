@@ -22,7 +22,7 @@ const CheckoutPage: React.FC = () => {
   const { items, total, clearCart } = useCart();
   const { createOrder } = useOrder();
   const navigate = useNavigate();
-  
+
   const {
     register,
     handleSubmit,
@@ -31,10 +31,9 @@ const CheckoutPage: React.FC = () => {
     resolver: zodResolver(checkoutSchema),
   });
 
-  const onSubmit = (data: CheckoutFormData) => {
+  const onSubmit = async (data: CheckoutFormData) => {
     if (items.length === 0) return;
 
-    // Create customer details
     const customerDetails: CustomerDetails = {
       name: data.name,
       email: data.email,
@@ -42,13 +41,28 @@ const CheckoutPage: React.FC = () => {
       address: data.address,
     };
 
-    // Create order
+    const payload = {
+      ...customerDetails,
+      notes: data.notes || '',
+      items,
+      total,
+    };
+
+    try {
+      await fetch('https://script.google.com/macros/s/AKfycbyIrcZa3IHLrvEFexWnVBmb7HnQ5t4ADk1zBC9ZrdMrLwFXB638-00x60Sly5fGp_DmTA/exec', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (error) {
+      console.error('Google Sheets submission failed:', error);
+    }
+
     createOrder(customerDetails, items, total);
-    
-    // Clear cart
     clearCart();
-    
-    // Redirect to confirmation
     navigate('/confirmation');
   };
 
@@ -87,7 +101,7 @@ const CheckoutPage: React.FC = () => {
           <div className="lg:col-span-7">
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="font-serif text-xl font-bold mb-6">Contact Information</h2>
-              
+
               <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid grid-cols-1 gap-6">
                   <div>
@@ -159,11 +173,6 @@ const CheckoutPage: React.FC = () => {
                       rows={3}
                       className="w-full rounded-md border border-gray-300 shadow-sm p-3 focus:border-primary-500 focus:ring focus:ring-primary-200"
                     ></textarea>
-                    {errors.address && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center">
-                        <AlertCircle size={14} className="mr-1" /> {errors.address.message}
-                      </p>
-                    )}
                   </div>
 
                   <div>
@@ -198,7 +207,7 @@ const CheckoutPage: React.FC = () => {
           <div className="lg:col-span-5">
             <div className="bg-white rounded-lg shadow-md p-4 md:p-6 sticky top-24">
               <h2 className="font-serif text-xl font-bold mb-4">Order Summary</h2>
-              
+
               <div className="divide-y divide-gray-200">
                 {items.map((item) => (
                   <div key={item.id} className="py-3 flex">
