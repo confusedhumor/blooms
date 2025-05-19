@@ -37,7 +37,7 @@ const OrderConfirmationPage: React.FC = () => {
     `Looking forward to receiving my order!`
   );
 
-  const whatsappUrl = `https://wa.me/8377885383?text=${message}`;
+  const whatsappUrl = `https://wa.me/918377885383?text=${message}`;
 
   return (
     <div className="pt-8 pb-16">
